@@ -33,60 +33,49 @@
 	    ((count 0)
 	     (lt (genSurr x y))
 	     (dirc '(left right down up))
-	     (up (list x (+ y 1)))
-	     (down (list x (- y 1)))
-	     (left (list (- x 1) y))
-	     (right (list (+ x 1) y)))
+	     (temp '()))
+	     
 					;Modes checking or setting or destroying
 					;2 == Destroying
 	     (cond ((= checking 2)
 		    (loop for i in lt do
 			 (cond ((equal (car i) wORb)
 				(destroy (car (car dirc)) wORb)))
-			 (setq dirc (cdr dirc)))))
-	     
-	     
+			 (setf dirc (cdr dirc))))
+	     	   
+		   
 					;1 == checking
 		   ((= checking 1)
+					
+		    (setf temp dirc)
 					;if any adjacent are empty
-		    (setq temp dirc)
 		    (loop for i in lt do
 			 (cond ((= (last i) 999)
 				(incf count)))
-			 (setq temp (cdr temp)))
-					;(cond ((= downLibs 999)
-					;	   (incf count)))
-		   
-		   
+			 (setf temp (cdr temp)))
+		    			
+		    (setf temp dirc)
 					;if any adjacent are same color
-		    (setq temp dirc)
 		    (loop for i in lt do
 			 (cond ((equal (car i) wORb)
 				(setf count (+ count (last i)))))
-			 (setq temp (cdr temp)))
-					;(cond ((equal downColor wORb)
-					;     (setf count (+ count (- downLibs 1)))
-					;     (checkSurr x (- y 1) wORb 6)))
-			
-		    
+			 (setf temp (cdr temp)))
+				       
 					;if any opposite color, with only 1 Liberty
 		    (loop for i in lt do
 			 (cond ((and (not (= (car i) wORb))
 				     (= 1 (last i)))
 				(incf count)
-				(destroy (car (car dirc)))))
-			 (setq dirc (cdr dirc)))
-		   
-		   
-					; (cond ((and (not (equal rightColor wORb))
-					;		(= 1 rightLibs))
-					;	   (incf count)
-					;	   (destroy (+ x 1) y wORb)))
-		    count)))
+				(destroy (car (car dirc)) wORb)))
+			 (setf dirc (cdr dirc)))
+		   		
+		    count))))
 
-(defun destroy (x y wORb)
-	(setC x y 'N 999)
-	(checkSurr x y wORb 2))
+(defun destroy (lst wORb)
+	   (let ((x (car lst))
+		 (y (car (cdr lst))))
+	     (setC x y 'N 999)
+	     (checkSurr x y wORb 2)))
 
 (defun propogateLibChanges (x y wORb lib)
 	   (let*(
