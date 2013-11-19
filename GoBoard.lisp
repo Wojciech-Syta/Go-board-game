@@ -1,8 +1,13 @@
+;Propogate doesnt work
+;doesnt check if combining same string of stones
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;Board Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar *board* (make-array '(9 9) :element-type 'list :initial-element '(N 999)))
+(defparameter size 9)
+
+(defvar *board* (make-array (list size size) :element-type 'list :initial-element '(N 999)))
 
 (defun filled (x y)
 	   (aref *board* x y))
@@ -26,7 +31,7 @@
 			    (t
 			     (setC x y wORb lib)
 			     (checkSurr x y wORb 3 lib))))))))
-
+		
 (defun checkSurr (x y wORb &optional (checking 1)(lib 0))
 	   (let*
 	    ((count 0)
@@ -49,11 +54,15 @@
 		   
 					;propogating Liberty changes		   
 		   ((= checking 3)
+		    
 		    (loop for i in lt do
 			 (cond ((and (not (equal i '(nil nil)))
-				     (equal (car dirc) wORb)
-				     (not (equal (second (car dirc)) lib)))
-				(checkSurr (car i)(second i) wORb 3 lib)))
+				     (equal (car i) wORb)
+				     (not (equal (second  i) lib)))
+				(print (list "     setting" x y))
+				(setf temp (car dirc))
+				(setC (car temp)(second temp) wORb lib)
+				(checkSurr (car temp)(second temp) wORb 3 lib)))
 			 (setf dirc (cdr dirc))))
 		    		    		      	   
 					;calculating Liberties
@@ -71,7 +80,7 @@
 		    (loop for i in lt do
 			 (cond ((and (not (equal i '(nil nil)))
 				     (equal (car i) wORb))
-				(setf count (+ count (second i)))))
+				(setf count (+ count (- (second i) 1)))))
 			 (setf temp (cdr temp)))
 
 					;if any opposite color, with only 1 Liberty
@@ -99,7 +108,7 @@
 		     (list leftColor leftLibs)))
 		  (t
 		   '(NIL NIL)))
-	    (cond ((< x 8)
+	    (cond ((< x (- size 1))
 		   (let* (				 
 			  (b (filled (+ x 1) y)) 
 			  (rightColor (car b))
@@ -115,7 +124,7 @@
 		     (list downColor downLibs)))
 		  (t
 		   '(NIL NIL)))
-	    (cond ((< y 8)				    
+	    (cond ((< y (- size 1))				    
 		   (let* (
 			  (c (filled x (+ y 1))) 
 			  (upColor (car c))
