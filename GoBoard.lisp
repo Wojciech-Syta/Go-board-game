@@ -65,7 +65,7 @@
 				     (= (second i) 999))
 				(incf count)))
 			 (setf temp (cdr temp)))
-		    			
+
 		    (setf temp dirc)
 					;if any adjacent are same color
 		    (loop for i in lt do
@@ -77,13 +77,12 @@
 					;if any opposite color, with only 1 Liberty
 		    (loop for i in lt do 
 			 (cond ((and (not (equal i '(nil nil)))
-				     (not (equal (car i) wORb)))
-				(= 1 (second i))
+				     (not (equal (car i) wORb))
+				     (= 1 (second i)))
 				(incf count)
 				(destroy (car dirc) wORb)))
 			 (setf dirc (cdr dirc)))
 		    count))))
-
 (defun destroy (lst wORb)
 	   (let ((x (car lst))
 		 (y (car (cdr lst))))
