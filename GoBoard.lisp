@@ -6,6 +6,9 @@
 
 (defparameter size 9)
 
+;union count
+(defparameter strng 0)
+
 ;two dim array with elements (Color Linerties Union#)
 (defvar *board* (make-array (list size size) :element-type 'list :initial-element '(N 999 0)))
 
@@ -31,8 +34,8 @@
 		      (cond ((zerop lib)
 			     nil)
 			    (t
-			     (setC x y wORb lib)
-			     (checkSurr x y wORb 3 lib))))))))
+			     (setC x y wORb lib 0)
+			     (checkSurr x y wORb 3 lib union))))))))
 
 ;considinf destroying by union
 (defun destroy (lst wORb)
@@ -41,40 +44,45 @@
 	     (setC x y 'N 999 0)
 	     (checkSurr x y wORb 2)))
 
+;clean this up
 (defun genSurr (x y)
 	   (list
 	    (cond ((> x 0)
 		   (let* (
 			  (a (filled (- x 1) y))
 			  (leftColor (car a))
-			  (leftLibs (car (cdr a))))
-		     (list leftColor leftLibs)))
+			  (leftLibs (second a))
+			  (leftunion (third a)))
+		     (list leftColor leftLibs leftunion)))
 		  (t
 		   '(NIL NIL)))
 	    (cond ((< x (- size 1))
 		   (let* (				 
 			  (b (filled (+ x 1) y)) 
 			  (rightColor (car b))
-			  (rightLibs (car (cdr b))))
-		     (list rightColor rightLibs)))
+			  (rightLibs (second b))
+			  (rightunion (third b)))
+		     (list rightColor rightLibs rightunion)))
 		  (t
 		   '(NIL NIL)))
 	    (cond ((> y 0)
 		   (let* (
 			  (d (filled x (- y 1)))
 			  (downColor (car d))
-			  (downLibs (car (cdr d))))
-		     (list downColor downLibs)))
+			  (downLibs (second d))
+			  (downunion (third d)))
+		     (list downColor downLibs downunion)))
 		  (t
 		   '(NIL NIL)))
 	    (cond ((< y (- size 1))				    
 		   (let* (
 			  (c (filled x (+ y 1))) 
 			  (upColor (car c))
-			  (upLibs (car (cdr c))))
-		       (list upColor upLibs)))
+			  (upLibs (second c))
+			  (upunion (third c)))
+		       (list upColor upLibs upunion)))
 		  (t
-		   '(NIL NIL)))))
+		   '(NIL NIL NIL)))))
 
 (defun checkUnion (lst &optional(acc 0))
 	   (cond ((equal (car lst) 'nil)
@@ -89,8 +97,7 @@
 ;In progress
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 		
-
-(defun checkSurr (x y wORb &optional (checking 1)(lib 0))
+(defun checkSurr (x y wORb &optional (checking 1)(lib 0)(union 0))
 	   (let*
 	    ((count 0)
 	     (lt (genSurr x y))
@@ -117,7 +124,7 @@
 				     (equal (car i) wORb)
 				     (not (equal (second  i) lib)))
 				(setf temp (car dirc))
-				(setC (car temp)(second temp) wORb lib)
+				(setC (car temp)(second temp) wORb lib union)
 				(checkSurr (car temp)(second temp) wORb 3 lib)))
 			 (setf dirc (cdr dirc))))
 		    		    		      	   
@@ -140,9 +147,9 @@
 		    (cond (( equal (car temp) nil)
 			   (break))
 			  ((equal (cdr temp) nil)
-			   (setf count (+ count (- (car temp) 1))))
+			   (setf count (+ count (+ (car temp) 1))))
 			  (t
-			   (setf count (checkUnion temp))))	 
+			   (setf count (+ count (checkUnion temp)))))
 
 					;if any opposite color, with only 1 Liberty
 		    (loop for i in lt do 
@@ -152,6 +159,6 @@
 				(incf count)
 				(destroy (car dirc) wORb)))
 			 (setf dirc (cdr dirc)))
-		    count))))
- 
+		    count
+		    ))))
 
