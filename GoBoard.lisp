@@ -1,4 +1,6 @@
-;doesnt check if combining same string of stones
+;doesnt get full count when propg changes
+;doesnt change union after adding
+; lots of cleaning to do
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;Board Functions
@@ -25,6 +27,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;make return value of checksurr (list lib union)
+;cond strng to check if new union
 (defun evalchoice (x y wORb)
 	   (let ((val (filled x y)))
 	     (cond ((not (equal 'N (car val)))
@@ -84,13 +87,15 @@
 		  (t
 		   '(NIL NIL NIL)))))
 
+;use strng to check union creation
 (defun checkUnion (lst &optional(acc 0))
 	   (cond ((equal (car lst) 'nil)
 		  acc)
 		 (t
 		  (loop for i in (cdr lst) do
 		       (cond ((not (equal (third (car lst)) (third i)))
-			      (setf acc (+ acc (second i))))))
+			      (setf acc (+ acc (second i)))
+			      (incf strng))))		    		    
 		  (checkUnion (cdr lst) acc))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -130,7 +135,7 @@
 		    		    		      	   
 					;calculating Liberties
 		   ((= checking 1)		   
-		    
+		    (incf strng)
 					;if any adjacent are empty
 		    (loop for i in lt do
 			 (cond ((and (not (equal i '(nil nil)))
@@ -161,4 +166,3 @@
 			 (setf dirc (cdr dirc)))
 		    count
 		    ))))
-
