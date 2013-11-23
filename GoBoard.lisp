@@ -1,17 +1,14 @@
-;doesnt get full count when propg changes
-;doesnt change union after adding
-; lots of cleaning to do
+;double counts L shape
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;Board Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defparameter size 9)
+(defparameter size 7)
 
 ;union count
 (defparameter strng 0)
 
-;two dim array with elements (Color Linerties Union#)
 (defvar *board* (make-array (list size size) :element-type 'list :initial-element '(N 999 0)))
 
 (defun filled (x y)
@@ -26,8 +23,6 @@
 ;Placement Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;make return value of checksurr (list lib union)
-;cond strng to check if new union
 (defun evalchoice (x y wORb)
 	   (let ((val (filled x y)))
 	     (cond ((not (equal 'N (car val)))
@@ -37,10 +32,11 @@
 		      (cond ((zerop lib)
 			     nil)
 			    (t
-			     (setC x y wORb lib 0)
-			     (checkSurr x y wORb 3 lib union))))))))
+			     (setC x y wORb lib strng)
+			     (checkSurr x y wORb 3 lib (third val)))))))))
 
-;considinf destroying by union
+
+;considing destroying by union
 (defun destroy (lst wORb)
 	   (let ((x (car lst))
 		 (y (car (cdr lst))))
@@ -58,7 +54,7 @@
 			  (leftunion (third a)))
 		     (list leftColor leftLibs leftunion)))
 		  (t
-		   '(NIL NIL)))
+		   '(NIL NIL NIL)))
 	    (cond ((< x (- size 1))
 		   (let* (				 
 			  (b (filled (+ x 1) y)) 
@@ -67,7 +63,7 @@
 			  (rightunion (third b)))
 		     (list rightColor rightLibs rightunion)))
 		  (t
-		   '(NIL NIL)))
+		   '(NIL NIL NIL)))
 	    (cond ((> y 0)
 		   (let* (
 			  (d (filled x (- y 1)))
@@ -76,7 +72,7 @@
 			  (downunion (third d)))
 		     (list downColor downLibs downunion)))
 		  (t
-		   '(NIL NIL)))
+		   '(NIL NIL NIL)))
 	    (cond ((< y (- size 1))				    
 		   (let* (
 			  (c (filled x (+ y 1))) 
@@ -98,11 +94,8 @@
 			      (incf strng))))		    		    
 		  (checkUnion (cdr lst) acc))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;In progress
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 		
-(defun checkSurr (x y wORb &optional (checking 1)(lib 0)(union 0))
+(defun checkSurr (x y wORb &optional (checking 1)(lib 0)(union strng))
 	   (let*
 	    ((count 0)
 	     (lt (genSurr x y))
@@ -116,53 +109,48 @@
 					;2 == Destroying
 	     (cond ((= checking 2)
 		    (loop for i in lt do
-			 (cond ((and (not (equal i '(nil nil)))
+			 (cond ((and (not (equal i '(nil nil nil)))
 				     (equal (car i) wORb))		       
 				(destroy (car  dirc) wORb)))
 			 (setf dirc (cdr dirc))))
 		   
 					;propogating Liberty changes		   
-		   ((= checking 3)
-		    
+		   ((= checking 3)		   
 		    (loop for i in lt do
-			 (cond ((and (not (equal i '(nil nil)))
+			 (cond ((and (not (equal i '(nil nil nil)))
 				     (equal (car i) wORb)
 				     (not (equal (second  i) lib)))
 				(setf temp (car dirc))
-				(setC (car temp)(second temp) wORb lib union)
-				(checkSurr (car temp)(second temp) wORb 3 lib)))
+				(setC (car temp) (second temp) wORb lib union)
+				(checkSurr (car temp)(second temp) wORb 3 lib union)))
 			 (setf dirc (cdr dirc))))
 		    		    		      	   
 					;calculating Liberties
-		   ((= checking 1)		   
-		    (incf strng)
+		   ((= checking 1)		   		    
 					;if any adjacent are empty
 		    (loop for i in lt do
-			 (cond ((and (not (equal i '(nil nil)))
+			 (cond ((and (not (equal i '(nil nil nil)))
 				     (= (second i) 999))
-				(incf count))))
-			    		    
-			 
+				(incf count))))		
 					;if any adjacent are same color
 		    (loop for i in lt do
-			 (cond ((and (not (equal i '(nil nil)))
+			 (cond ((and (not (equal i '(nil nil nil)))
 				     (equal (car i) wORb))
-				(setf temp (list temp i)))))
-		    
-		    (cond (( equal (car temp) nil)
-			   (break))
-			  ((equal (cdr temp) nil)
-			   (setf count (+ count (+ (car temp) 1))))
+				(setf temp (list i temp)))))
+
+		    (cond ((equal (car temp) 'nil)
+			   (incf strng))
+			  ((equal (second temp) nil)
+			   (setf count (+ count (- (second (car temp)) 1))))
 			  (t
 			   (setf count (+ count (checkUnion temp)))))
-
 					;if any opposite color, with only 1 Liberty
 		    (loop for i in lt do 
-			 (cond ((and (not (equal i '(nil nil)))
+			 (cond ((and (not (equal i '(nil nil nil)))
 				     (not (equal (car i) wORb))
 				     (= 1 (second i)))
 				(incf count)
 				(destroy (car dirc) wORb)))
-			 (setf dirc (cdr dirc)))
+			 (setf dirc (cdr dirc)))(print count)
 		    count
-		    ))))
+		    )))
